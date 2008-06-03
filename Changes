@@ -1,6 +1,6 @@
 Revision history for Perl extension Data::Omap.
 
 0.01  Sun Jun  1 18:04:09 2008
-	- original version; created by h2xs 1.23 with options
-		-AX --skip-exporter --use-new-tests -n Data::Omap -b 5.8.0
+    - original version; created by h2xs 1.23 with options
+        -AX --skip-exporter --use-new-tests -n Data::Omap -b 5.8.0
 
