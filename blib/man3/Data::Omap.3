@@ -129,9 +129,401 @@
 .\" ========================================================================
 .\"
 .IX Title "Data::Omap 3"
-.TH Data::Omap 3 "2008-06-03" "perl v5.8.8" "User Contributed Perl Documentation"
+.TH Data::Omap 3 "2008-06-04" "perl v5.8.8" "User Contributed Perl Documentation"
 .SH "NAME"
-Data::Omap
+Data::Omap \- Perl module to implement ordered mappings
 .SH "SYNOPSIS"
 .IX Header "SYNOPSIS"
-use Data::Omap;
+.Vb 1
+\& use Data::Omap;
+.Ve
+.PP
+.Vb 1
+\& # Simple OO style
+.Ve
+.PP
+.Vb 1
+\& my $omap = Data::Omap->new( [{a=>1},{b=>2},{c=>3}] );
+.Ve
+.PP
+.Vb 2
+\& $omap->set( a => 0 );
+\& $omap->add( b2 => 2.5, 2 );  # insert at position 2 (between b and c)
+.Ve
+.PP
+.Vb 4
+\& my $value  = $omap->get_values( 'c' );    # 3
+\& my @keys   = $omap->get_keys();           # (a, b, b2, c)
+\& my @values = $omap->get_values();         # (0, 2, 2.5, 3)
+\& my @subset = $omap->get_values(qw(c b));  # (2, 3) (values are data-ordered)
+.Ve
+.PP
+.Vb 1
+\& # Tied style
+.Ve
+.PP
+.Vb 3
+\& my %omap;
+\& # recommend saving an object reference, too.
+\& my $omap = tie %omap, 'Data::Omap', [{a=>1},{b=>2},{c=>3}];
+.Ve
+.PP
+.Vb 2
+\& $omap{ a } = 0;
+\& $omap->add( b2 => 2.5, 2 );  # there's no tied hash equivalent
+.Ve
+.PP
+.Vb 4
+\& my $value  = $omap{ c };
+\& my @keys   = keys %omap;      # $omap->get_keys() is faster 
+\& my @values = values %omap;    # $omap->get_values() is faster
+\& my @slice  = @omap{qw(c b)};  # (3, 2) (slice values are parameter-ordered)
+.Ve
+.PP
+.Vb 1
+\& # There are more methods/options, see below.
+.Ve
+.SH "DESCRIPTION"
+.IX Header "DESCRIPTION"
+This module implements the Data::Omap class.  Objects in this class
+are ordered mappings, i.e., they are hashes in which the key/value
+pairs are in order. This is defined in shorthand as \f(CW\*(C`!!omap\*(C'\fR in the
+\&\s-1YAML\s0 tag repository:  http://yaml.org/type/omap.html.
+.PP
+The keys in Data::Omap objects are unique, like regular hashes.
+.PP
+A closely related class, Data::Pairs, implements the \s-1YAML\s0 \f(CW\*(C`!!pairs\*(C'\fR
+data type, http://yaml.org/type/pairs.html.  Data::Pairs objects are
+also ordered sequences of key:value pairs but they allow duplicate
+keys.
+.PP
+While ordered mappings are in order, they are not necessarily in a
+\&\fIparticular\fR order, i.e., they are not necessarily sorted in any
+way.  They simply have a predictable set order (unlike regular hashes
+whose key/value pairs are in no set order).
+.PP
+By default, Data::Omap will add new key/value pairs at the end of the
+mapping, but you may request that they be merged in a particular
+order with the \f(CW\*(C`order()\*(C'\fR class method.
+.PP
+However, even though Data::Omap will honor the requested order, it
+will not attempt to \fIkeep\fR the mapping in that order.  By passing
+position values to the \f(CW\*(C`set()\*(C'\fR and \f(CW\*(C`add()\*(C'\fR methods, you may insert
+new pairs anywhere in the mapping and Data::Omap will not complain.
+.SH "IMPLEMENTATION"
+.IX Header "IMPLEMENTATION"
+Normally, the underlying structure of an \s-1OO\s0 object is encapsulated
+and not directly accessible (when you play nice). One key
+implementation detail of Data::Omap is the desire that the underlying
+ordered mapping data structure (an array of single-key hashes) be
+publically maintained as such and directly accessible, if desired.
+.PP
+To that end, no attributes but the data itself are stored in the
+objects.  In the current version, that is why \f(CW\*(C`order()\*(C'\fR is a class
+method rather than an object method.  In the future, inside-out
+techniques may be used to enable object-level ordering.
+.PP
+This data structure is inefficient in several ways as compared to
+regular hashes: rather than one hash, it contains a separate hash per
+key/value pair; because it's an array, key lookups (in the current
+version) have to loop through it.
+.PP
+The advantage if using this structure is simply that it \*(L"natively\*(R"
+matches the structure defined in \s-1YAML\s0.  So if the (unblessed)
+structure is dumped using \s-1YAML\s0 (or perhaps \s-1JSON\s0), it may be read as
+is by another program, perhaps in another language.  It is true that
+this could be accomplished by passing the object through a formatting
+routine, but I wanted to see first how this implementation might work.
+.SH "VERSION"
+.IX Header "VERSION"
+Data::Omap version 0.01
+.SH "CLASS METHODS"
+.IX Header "CLASS METHODS"
+.Sh "Data::Omap\->\fInew()\fP;"
+.IX Subsection "Data::Omap->new();"
+Constructs a new Data::Omap object.
+.PP
+Accepts array ref containing single-key hash refs, e.g.,
+.PP
+.Vb 1
+\& my $omap = Data::Omap->new( [ { a => 1 }, { b => 2 }, { c => 3 } ] );
+.Ve
+.PP
+When provided, this data will be loaded into the object.
+.PP
+Returns a reference to the Data::Omap object.
+.Sh "Data::Omap\->\fIorder()\fP;"
+.IX Subsection "Data::Omap->order();"
+When ordering is \s-1ON\s0, new key/value pairs will be added in the
+specified order.  When ordering is \s-1OFF\s0 (the default), new pairs
+will be added to the end of the mapping.
+.PP
+When called with no parameters, \f(CW\*(C`order()\*(C'\fR returns the current code
+reference (if ordering is \s-1ON\s0) or a false value (if ordering is \s-1OFF\s0);
+it does not change the ordering.
+.PP
+.Vb 1
+\& Data::Omap->order();         # leaves ordering as is
+.Ve
+.PP
+When called with the null string, \f(CW''\fR, ordering is turned \s-1OFF\s0.
+.PP
+.Vb 1
+\& Data::Omap->order( '' );     # turn ordering OFF (the default)
+.Ve
+.PP
+Otherwise, accepts the predefined orderings: 'na', 'nd', 'sa', 'sd',
+\&'sna', and 'snd', or a custom code reference, e.g.
+.PP
+.Vb 7
+\& Data::Omap->order( 'na' );   # numeric ascending
+\& Data::Omap->order( 'nd' );   # numeric ascending
+\& Data::Omap->order( 'sa' );   # string  ascending
+\& Data::Omap->order( 'sd' );   # string  descending
+\& Data::Omap->order( 'sna' );  # string/numeric ascending
+\& Data::Omap->order( 'snd' );  # string/numeric descending
+\& Data::Omap->order( sub{ int($_[0]/100) < int($_[1]/100) } );  # code
+.Ve
+.PP
+The predefined orderings, 'na' and 'nd', compare keys as numbers.
+The orderings, 'sa' and 'sd', compare keys as strings.  The
+orderings, 'sna' and 'snd', compare keys as numbers when they are
+both numbers, as strings otherwise.
+.PP
+When defining a custom ordering, the convention is to use the
+operators \f(CW\*(C`<\*(C'\fR or \f(CW\*(C`lt\*(C'\fR between (functions of) \f(CW$_[0]\fR and
+\&\f(CW$_[1]\fR for ascending and between \f(CW$_[1]\fR and \f(CW$_[0]\fR for
+descending.
+.PP
+Returns the code reference if ordering is \s-1ON\s0, a false value if \s-1OFF\s0.
+.PP
+Note, when object-level ordering is implemented, it is expected that
+the class-level option will still be available.  In that case, any
+new objects will inherite the class-level ordering unless overridden
+at the object level.
+.SH "OBJECT METHODS"
+.IX Header "OBJECT METHODS"
+.ie n .Sh "$omap\->set( $key\fP => \f(CW$value\fP[, \f(CW$pos] );"
+.el .Sh "$omap\->set( \f(CW$key\fP => \f(CW$value\fP[, \f(CW$pos\fP] );"
+.IX Subsection "$omap->set( $key => $value[, $pos] );"
+Sets the value if \f(CW$key\fR exists; adds a new key/value pair if not.
+.PP
+Accepts \f(CW$key\fR, \f(CW$value\fR, and optionally, \f(CW$pos\fR.
+.PP
+If \f(CW$pos\fR is given, and there is a key/value pair at that position,
+it will be set to \f(CW$key\fR and \f(CW$value\fR, \fIeven if the key is
+different\fR.  For example:
+.PP
+.Vb 2
+\& my $omap = Data::Omap->new( [{a=>1},{b=>2}] );
+\& $omap->set( c => 3, 0 );  # omap is now [{c=>3},{b=>2}]
+.Ve
+.PP
+(As implied by the example, positions start at 0.)
+.PP
+If \f(CW$pos\fR is given, and there isn't a pair there, a new pair is
+added there (perhaps overriding a defined ordering).
+.PP
+If \f(CW$pos\fR is not given, the key will be located and if found,
+the value set. If the key is not found, a new pair is added to the
+end or merged according to the defined \f(CW\*(C`order()\*(C'\fR.
+.PP
+Note that \f(CW\*(C`set()\*(C'\fR will die if a duplicate key would result.  This
+would only happen if \f(CW$pos\fR is given and the \f(CW$key\fR is found\*(--but
+not at that position.
+.PP
+Returns \f(CW$value\fR (as a nod toward \f(CW$hash\fR{$key}=$value, which
+\&\*(L"returns\*(R" \f(CW$value\fR).
+.ie n .Sh "$omap\->get_values( [$key[, @keys]] );"
+.el .Sh "$omap\->get_values( [$key[, \f(CW@keys\fP]] );"
+.IX Subsection "$omap->get_values( [$key[, @keys]] );"
+Get a value or values.
+.PP
+Regardless of parameters, if the object is empty, undef is returned in
+scalar context, an empty list in list context.
+.PP
+If no paramaters, gets all the values.  In scalar context, gives
+number of values in the object.
+.PP
+.Vb 3
+\& my $omap = Data::Omap->new( [{a=>1},{b=>2},{c=>3}] );
+\& my @values  = $omap->get_values();  # (1, 2, 3)
+\& my $howmany = $omap->get_values();  # 3
+.Ve
+.PP
+If one key is given, that value is returned\*(--regardless of
+context\*(--or if not found, \f(CW\*(C`undef\*(C'\fR.
+.PP
+.Vb 2
+\& @values   = $omap->get_values( 'b' );  # (2)
+\& my $value = $omap->get_values( 'b' );  # 2
+.Ve
+.PP
+If multiple keys given, their values are returned in the order found
+in the object, not the order of the given keys (unlike hash slices
+which return values in the order requested).
+.PP
+In scalar context, gives the number of values found, e.g.,
+.PP
+.Vb 2
+\& @values  = $omap->get_values( 'c', 'b', 'A' );  # (2, 3)
+\& $howmany = $omap->get_values( 'c', 'b', 'A' );  # 2
+.Ve
+.PP
+The hash slice behavior is available if you use \f(CW\*(C`tie\*(C'\fR, see below.
+.ie n .Sh "$omap\->add( $key\fP => \f(CW$value\fP[, \f(CW$pos] );"
+.el .Sh "$omap\->add( \f(CW$key\fP => \f(CW$value\fP[, \f(CW$pos\fP] );"
+.IX Subsection "$omap->add( $key => $value[, $pos] );"
+Adds a key/value pair to the object.
+.PP
+Accepts \f(CW$key\fR, \f(CW$value\fR, and optionally, \f(CW$pos\fR.
+.PP
+If \f(CW$pos\fR is given, the key/value pair will be added (inserted)
+there (possibly overriding a defined order), e.g.,
+.PP
+.Vb 2
+\& my $omap = Data::Omap->new( [{a=>1},{b=>2}] );
+\& $omap->add( c => 3, 1 );  # omap is now [{a=>1},{c=>3},{b=>2}]
+.Ve
+.PP
+(Positions start at 0.)
+.PP
+If \f(CW$pos\fR is not given, a new pair is added to the end or merged
+according to the defined \f(CW\*(C`order()\*(C'\fR.
+.PP
+Note that \f(CW\*(C`add()\*(C'\fR will die if a duplicate key would result, i.e.,
+if the key being added is already in the object.
+.PP
+Returns \f(CW$value\fR.
+.ie n .Sh "$omap\->_add_ordered( $key\fP => \f(CW$value );"
+.el .Sh "$omap\->_add_ordered( \f(CW$key\fP => \f(CW$value\fP );"
+.IX Subsection "$omap->_add_ordered( $key => $value );"
+Private routine used by \f(CW\*(C`set()\*(C'\fR and \f(CW\*(C`add()\*(C'\fR.
+.PP
+Accepts \f(CW$key\fR and \f(CW$value\fR.
+.PP
+Adds a new key/value pair to the end or merged according to the
+defined \f(CW\*(C`order()\*(C'\fR.
+.PP
+This routine should not be called directly, because it does not
+check for duplicates.
+.PP
+Has no defined return value.
+.ie n .Sh "$omap\->get_pos( @keys );"
+.el .Sh "$omap\->get_pos( \f(CW@keys\fP );"
+.IX Subsection "$omap->get_pos( @keys );"
+Gets positions where keys are found.
+.PP
+Accepts one or more keys.
+.PP
+If one key is given, returns the position or undef (if key not
+found), regardless of context, e.g.,
+.PP
+.Vb 3
+\& my $omap    = Data::Omap->new( [{a=>1},{b=>2},{c=>3}] );
+\& my @pos = $omap->get_pos( 'b' );  # (1)
+\& my $pos = $omap->get_pos( 'b' );  # 1
+.Ve
+.PP
+If multiple keys, returns the positions in list context, the number
+of keys found in scalar context.  The positions are listed in the
+order that the keys were given (rather than in numerical order),
+e.g.,
+.PP
+.Vb 2
+\& @pos        = $omap->get_pos( 'c', 'b' );       # @pos is (2, 1)
+\& my $howmany = $omap->get_pos( 'A', 'b', 'c' );  # $howmany is 2
+.Ve
+.PP
+Returns \f(CW\*(C`undef/()\*(C'\fR if no keys given or object is empty.
+.ie n .Sh "$omap\->get_keys( @keys );"
+.el .Sh "$omap\->get_keys( \f(CW@keys\fP );"
+.IX Subsection "$omap->get_keys( @keys );"
+Gets keys.
+.PP
+Accepts zero or more keys.  If no keys are given, returns all the
+keys in the object (list context) or the number of keys (scalar
+context), e.g.,
+.PP
+.Vb 3
+\& my $omap    = Data::Omap->new( [{a=>1},{b=>2},{c=>3}] );
+\& my @keys    = $omap->get_keys();  # @keys is (a, b, c)
+\& my $howmany = $omap->get_keys();  # $howmany is 3
+.Ve
+.PP
+If one or more keys are given, returns all the keys that are found
+(list) or the number found (scalar).  Keys returned are listed in the
+order found in the object, e.g.,
+.PP
+.Vb 2
+\& @keys    = $omap->get_keys( 'c', 'b', 'A' );  # @keys is (b, c)
+\& $howmany = $omap->get_keys( 'c', 'b', 'A' );  # $howmany is 2
+.Ve
+.ie n .Sh "$omap\->get_array( @keys );"
+.el .Sh "$omap\->get_array( \f(CW@keys\fP );"
+.IX Subsection "$omap->get_array( @keys );"
+Gets an array of key/value pairs.
+.PP
+Accepts zero or more keys.  If no keys are given, returns a list of
+all the key/value pairs in the object (list context) or an array
+reference to that list (scalar context), e.g.,
+.PP
+.Vb 3
+\& my $omap    = Data::Omap->new( [{a=>1},{b=>2},{c=>3}] );
+\& my @array   = $omap->get_array();  # @array is ({a=>1}, {b=>2}, {c=>3})
+\& my $aref    = $omap->get_array();  # $aref  is [{a=>1}, {b=>2}, {c=>3}]
+.Ve
+.PP
+If one or more keys are given, returns a list of key/value pairs for
+all the keys that are found (list) or an aref to that list (scalar).
+Pairs returned are in the order found in the object, e.g.,
+.PP
+.Vb 2
+\& @array = $omap->get_array( 'c', 'b', 'A' );  # @array is ({b->2}, {c=>3})
+\& $aref  = $omap->get_array( 'c', 'b', 'A' );  # @aref  is [{b->2}, {c=>3}]
+.Ve
+.PP
+Note, conceivably this method might be used to make a copy
+(unblessed) of the object, but it would not be a deep copy (if values
+are references, the references would be copied, not the referents).
+.Sh "$omap\->\fIfirstkey()\fP;"
+.IX Subsection "$omap->firstkey();"
+Expects no parameters.  Returns the first key in the object (or undef
+if object is empty).
+.PP
+This routine supports the tied hash \s-1FIRSTKEY\s0 method.
+.ie n .Sh "$omap\->nextkey( $lastkey );"
+.el .Sh "$omap\->nextkey( \f(CW$lastkey\fP );"
+.IX Subsection "$omap->nextkey( $lastkey );"
+Accepts one parameter, the last key gotten from \s-1FIRSTKEY\s0 or \s-1NEXTKEY\s0.
+.PP
+Returns the next key in the object.
+.PP
+This routine supports the tied hash \s-1NEXTKEY\s0 method.
+.ie n .Sh "$omap\->exists( $key );"
+.el .Sh "$omap\->exists( \f(CW$key\fP );"
+.IX Subsection "$omap->exists( $key );"
+Accepts one key.
+.PP
+Returns true if key is found in object, false if not.
+.PP
+This routine supports the tied hash \s-1EXISTS\s0 method, but may reasonably
+be called directly, too.
+.ie n .Sh "$omap\->delete( $key );"
+.el .Sh "$omap\->delete( \f(CW$key\fP );"
+.IX Subsection "$omap->delete( $key );"
+Accepts one key.  If key is found, removes the key/value pair from
+the object.
+.PP
+Returns the value from the deleted pair.
+.PP
+This routine supports the tied hash \s-1DELETE\s0 method, but may be called
+directly, too.
+.Sh "$omap\->\fIclear()\fP;"
+.IX Subsection "$omap->clear();"
+Expects no parameters.  Removes all key/value pairs from the object.
+.PP
+Returns an empty list.
+.PP
+This routine supports the tied hash \s-1CLEAR\s0 method, but may be called
+directly, too.

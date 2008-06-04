@@ -9,17 +9,17 @@ $Data::Dumper::Indent=0;
 
 BEGIN { use_ok('Data::Omap') };
 
-my( $omap, @values, @keys, @pos, $clone );
+my( $omap, @values, @keys, @array, $aref, @pos );
 
 $omap = Data::Omap->new( [ {c=>3}, {a=>1}, {b=>2}, ] );
 
-@values = $omap->get();
+@values = $omap->get_values();
 is( "@values", "3 1 2",
-    "get() all values, like 'values %hash'" );
+    "get_values(), all values, like 'values %hash'" );
 
-@values = $omap->get( qw( a b c ) );
+@values = $omap->get_values( qw( a b c ) );
 is( "@values", "3 1 2",
-    "get() selected values, like '\@hash{'c','a','b'}', i.e., data-ordered" );
+    "get_values(), selected values, like '\@hash{'c','a','b'}', i.e., data-ordered" );
 
 @keys = $omap->get_keys();
 is( "@keys", "c a b",
@@ -33,29 +33,33 @@ is( "@keys", "c a b",
 is( "@pos", "1 2 0",
     "get_pos() for selected keys, parameter-ordered" );
 
-$clone = $omap->clone();
-is( Dumper($clone), "[{'c' => 3},{'a' => 1},{'b' => 2}]",
-    "clone() entire self" );
+@array = $omap->get_array();
+is( Dumper(\@array), "[{'c' => 3},{'a' => 1},{'b' => 2}]",
+    "get_array(), list context" );
 
-$clone = $omap->clone( qw( b c ) );
-is( Dumper($clone), "[{'c' => 3},{'b' => 2}]",
-    "clone() selected keys" );
+$aref = $omap->get_array();
+is( Dumper($aref), "[{'c' => 3},{'a' => 1},{'b' => 2}]",
+    "get_array(), scalar context" );
 
-$omap->set( a=>0 ); @values = $omap->get( qw( a b c ) );
+@array = $omap->get_array( qw( b c ) );
+is( Dumper(\@array), "[{'c' => 3},{'b' => 2}]",
+    "get_array() for selected keys, data-ordered" );
+
+$omap->set( a=>0 ); @values = $omap->get_values( qw( a b c ) );
 is( "@values", "3 0 2",
     "set() a value" );
 
 # at pos 1, overwrite 'a'
-$omap->set( A=>1,1 ); @values = $omap->get( qw( A b c ) );
+$omap->set( A=>1,1 ); @values = $omap->get_values( qw( A b c ) );
 is( "@values", "3 1 2",
     "set() a value at a position" );
 
-$omap->add( d=>4 ); @values = $omap->get( qw( A b c d ) );
+$omap->add( d=>4 ); @values = $omap->get_values( qw( A b c d ) );
 is( "@values", "3 1 2 4",
     "add() a value" );
 
 # add at pos 2, between 'A' and 'b'
-$omap->add( a=>0,2 ); @values = $omap->get( qw( A a b c d ) );
+$omap->add( a=>0,2 ); @values = $omap->get_values( qw( A a b c d ) );
 is( "@values", "3 1 0 2 4",
     "add() a value at a position" );
 
@@ -69,7 +73,7 @@ is( $omap->nextkey('b'), 'd',
 
 is( $omap->exists('a'), 1,
     "exists() true" );
-is( $omap->exists('B'), undef,
+is( $omap->exists('B'), '',
     "exists() false" );
 
 $omap->delete('A');

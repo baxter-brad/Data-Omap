@@ -2,5 +2,8 @@ Changes
 Makefile.PL
 MANIFEST
 README
-t/Data-Omap.t
+t/01-DO-simple.t
+t/02-DO-ordering.t
+t/03-DO-tied.t
+t/04-DO-tied_ordering.t
 lib/Data/Omap.pm

@@ -34,7 +34,7 @@ is( $bool, undef,
 
 $bool = exists $omap{ a };  # EXISTS
 is( $bool, '',
-    "exists hash{key} on empty object" );  # false (Why '' and not undef? Don't know.)
+    "exists hash{key} on empty object" );
 
 $value = $omap{ a };  # FETCH
 is( $value, undef,
