@@ -204,6 +204,32 @@ is( Dumper($omap), "bless( [{'a' => 1},{'c' => 3},{'b' => 2}], 'Data::Omap' )",
 }
 
 OBJECT_get_pos: {
+#---------------------------------------------------------------------
+
+=head2 $omap->get_pos( @keys );
+
+Gets positions where keys are found.
+
+Accepts one or more keys.
+
+If one key is given, returns the position or undef (if key not
+found), regardless of context, e.g.,
+
+ my $omap    = Data::Omap->new( [{a=>1},{b=>2},{c=>3}] );
+ my @pos = $omap->get_pos( 'b' );  # (1)
+ my $pos = $omap->get_pos( 'b' );  # 1
+
+If multiple keys, returns a list of hash refs in list context, the
+number of keys found in scalar context.  The positions are listed in
+the order that the keys were given (rather than in numerical order),
+e.g.,
+
+ @pos        = $omap->get_pos( 'c', 'b' ); # @pos is ({c=>2},{b=>1})
+ my $howmany = $omap->get_pos( 'A', 'b', 'c' );  # $howmany is 2
+
+Returns C<undef/()> if no keys given or object is empty.
+
+=cut
 
      my $omap    = Data::Omap->new( [{a=>1},{b=>2},{c=>3}] );
 
@@ -222,7 +248,7 @@ is( $pos, 1,
 
      @pos        = $omap->get_pos( 'c', 'b' );       # @pos is (2, 1)
 
-is( "@pos", "2 1",
+is( Dumper(\@pos), "[{'c' => 2},{'b' => 1}]",
     "get_pos( 'c', 'b' ), list" );
 
      my $howmany = $omap->get_pos( 'A', 'b', 'c' );  # $howmany is 2

@@ -11,7 +11,7 @@
 #   MakeMaker Parameters:
 
 #     ABSTRACT_FROM => q[lib/Data/Omap.pm]
-#     AUTHOR => q[Brad Baxter <bmb@galib.uga.edu>]
+#     AUTHOR => q[Brad Baxter <bmb@mail.libs.uga.edu>]
 #     NAME => q[Data::Omap]
 #     PREREQ_PM => {  }
 #     VERSION_FROM => q[lib/Data/Omap.pm]
@@ -54,11 +54,11 @@ DIRFILESEP = /
 DFSEP = $(DIRFILESEP)
 NAME = Data::Omap
 NAME_SYM = Data_Omap
-VERSION = 0.01
+VERSION = 0.02
 VERSION_MACRO = VERSION
-VERSION_SYM = 0_01
+VERSION_SYM = 0_02
 DEFINE_VERSION = -D$(VERSION_MACRO)=\"$(VERSION)\"
-XS_VERSION = 0.01
+XS_VERSION = 0.02
 XS_VERSION_MACRO = XS_VERSION
 XS_DEFINE_VERSION = -D$(XS_VERSION_MACRO)=\"$(XS_VERSION)\"
 INST_ARCHLIB = blib/arch
@@ -244,7 +244,7 @@ RCS_LABEL = rcs -Nv$(VERSION_SYM): -q
 DIST_CP = best
 DIST_DEFAULT = tardist
 DISTNAME = Data-Omap
-DISTVNAME = Data-Omap-0.01
+DISTVNAME = Data-Omap-0.02
 
 
 # --- MakeMaker macro section:
@@ -467,7 +467,7 @@ metafile : create_distdir
 	$(NOECHO) $(ECHO) '# http://module-build.sourceforge.net/META-spec.html' > META_new.yml
 	$(NOECHO) $(ECHO) '#XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#' >> META_new.yml
 	$(NOECHO) $(ECHO) 'name:         Data-Omap' >> META_new.yml
-	$(NOECHO) $(ECHO) 'version:      0.01' >> META_new.yml
+	$(NOECHO) $(ECHO) 'version:      0.02' >> META_new.yml
 	$(NOECHO) $(ECHO) 'version_from: lib/Data/Omap.pm' >> META_new.yml
 	$(NOECHO) $(ECHO) 'installdirs:  site' >> META_new.yml
 	$(NOECHO) $(ECHO) 'requires:' >> META_new.yml
@@ -761,10 +761,10 @@ testdb_static :: testdb_dynamic
 # --- MakeMaker ppd section:
 # Creates a PPD (Perl Package Description) for a binary distribution.
 ppd:
-	$(NOECHO) $(ECHO) '<SOFTPKG NAME="$(DISTNAME)" VERSION="0,01,0,0">' > $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '<SOFTPKG NAME="$(DISTNAME)" VERSION="0,02,0,0">' > $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <TITLE>$(DISTNAME)</TITLE>' >> $(DISTNAME).ppd
-	$(NOECHO) $(ECHO) '    <ABSTRACT></ABSTRACT>' >> $(DISTNAME).ppd
-	$(NOECHO) $(ECHO) '    <AUTHOR>Brad Baxter &lt;bmb@galib.uga.edu&gt;</AUTHOR>' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '    <ABSTRACT>Perl module to implement ordered mappings</ABSTRACT>' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '    <AUTHOR>Brad Baxter &lt;bmb@mail.libs.uga.edu&gt;</AUTHOR>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <IMPLEMENTATION>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <OS NAME="$(OSNAME)" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <ARCHITECTURE NAME="sun4-solaris" />' >> $(DISTNAME).ppd

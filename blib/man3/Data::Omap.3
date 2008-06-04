@@ -236,7 +236,7 @@ this could be accomplished by passing the object through a formatting
 routine, but I wanted to see first how this implementation might work.
 .SH "VERSION"
 .IX Header "VERSION"
-Data::Omap version 0.01
+Data::Omap version 0.02
 .SH "CLASS METHODS"
 .IX Header "CLASS METHODS"
 .Sh "Data::Omap\->\fInew()\fP;"
@@ -328,7 +328,7 @@ If \f(CW$pos\fR is not given, the key will be located and if found,
 the value set. If the key is not found, a new pair is added to the
 end or merged according to the defined \f(CW\*(C`order()\*(C'\fR.
 .PP
-Note that \f(CW\*(C`set()\*(C'\fR will die if a duplicate key would result.  This
+Note that \f(CW\*(C`set()\*(C'\fR will croak if a duplicate key would result.  This
 would only happen if \f(CW$pos\fR is given and the \f(CW$key\fR is found\*(--but
 not at that position.
 .PP
@@ -391,7 +391,7 @@ there (possibly overriding a defined order), e.g.,
 If \f(CW$pos\fR is not given, a new pair is added to the end or merged
 according to the defined \f(CW\*(C`order()\*(C'\fR.
 .PP
-Note that \f(CW\*(C`add()\*(C'\fR will die if a duplicate key would result, i.e.,
+Note that \f(CW\*(C`add()\*(C'\fR will croak if a duplicate key would result, i.e.,
 if the key being added is already in the object.
 .PP
 Returns \f(CW$value\fR.
@@ -425,13 +425,13 @@ found), regardless of context, e.g.,
 \& my $pos = $omap->get_pos( 'b' );  # 1
 .Ve
 .PP
-If multiple keys, returns the positions in list context, the number
-of keys found in scalar context.  The positions are listed in the
-order that the keys were given (rather than in numerical order),
+If multiple keys, returns a list of hash refs in list context, the
+number of keys found in scalar context.  The positions are listed in
+the order that the keys were given (rather than in numerical order),
 e.g.,
 .PP
 .Vb 2
-\& @pos        = $omap->get_pos( 'c', 'b' );       # @pos is (2, 1)
+\& @pos        = $omap->get_pos( 'c', 'b' ); # @pos is ({c=>2},{b=>1})
 \& my $howmany = $omap->get_pos( 'A', 'b', 'c' );  # $howmany is 2
 .Ve
 .PP
