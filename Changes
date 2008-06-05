@@ -1,5 +1,8 @@
 Revision history for Perl extension Data::Omap.
 
+0.03  Wed Jun  4 17:54:06 EDT 2008
+    - validate incoming structure in new()
+
 0.02  Wed Jun  4 17:54:06 EDT 2008
     - added 'use Carp;'
     - changed get_pos() to return a list of hashrefs
