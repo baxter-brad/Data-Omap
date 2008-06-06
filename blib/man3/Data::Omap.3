@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "Data::Omap 3"
-.TH Data::Omap 3 "2008-06-04" "perl v5.8.8" "User Contributed Perl Documentation"
+.TH Data::Omap 3 "2008-06-05" "perl v5.8.8" "User Contributed Perl Documentation"
 .SH "NAME"
 Data::Omap \- Perl module to implement ordered mappings
 .SH "SYNOPSIS"
@@ -236,7 +236,7 @@ this could be accomplished by passing the object through a formatting
 routine, but I wanted to see first how this implementation might work.
 .SH "VERSION"
 .IX Header "VERSION"
-Data::Omap version 0.03
+Data::Omap version 0.04
 .SH "CLASS METHODS"
 .IX Header "CLASS METHODS"
 .Sh "Data::Omap\->\fInew()\fP;"
@@ -409,33 +409,42 @@ This routine should not be called directly, because it does not
 check for duplicates.
 .PP
 Has no defined return value.
-.ie n .Sh "$omap\->get_pos( @keys );"
-.el .Sh "$omap\->get_pos( \f(CW@keys\fP );"
-.IX Subsection "$omap->get_pos( @keys );"
-Gets positions where keys are found.
+.ie n .Sh "$omap\->get_pos( $key );"
+.el .Sh "$omap\->get_pos( \f(CW$key\fP );"
+.IX Subsection "$omap->get_pos( $key );"
+Gets position where a key is found.
 .PP
-Accepts one or more keys.
+Accepts one key (any extras are silently ignored).  
 .PP
-If one key is given, returns the position or undef (if key not
-found), regardless of context, e.g.,
+Returns the position or undef (if key not found), regardless of context, e.g.,
 .PP
 .Vb 3
-\& my $omap    = Data::Omap->new( [{a=>1},{b=>2},{c=>3}] );
-\& my @pos = $omap->get_pos( 'b' );  # (1)
-\& my $pos = $omap->get_pos( 'b' );  # 1
+\& my $omap = Data::Omap->new( [{a=>1},{b=>2},{c=>3}] );
+\& my @pos  = $omap->get_pos( 'b' );  # (1)
+\& my $pos  = $omap->get_pos( 'b' );  # 1
 .Ve
 .PP
-If multiple keys, returns a list of hash refs in list context, the
-number of keys found in scalar context.  The positions are listed in
-the order that the keys were given (rather than in numerical order),
-e.g.,
+Returns \f(CW\*(C`undef/()\*(C'\fR if no key given or object is empty.
+.ie n .Sh "$omap\->get_pos_hash( @keys );"
+.el .Sh "$omap\->get_pos_hash( \f(CW@keys\fP );"
+.IX Subsection "$omap->get_pos_hash( @keys );"
+Gets positions where keys are found.
 .PP
-.Vb 2
-\& @pos        = $omap->get_pos( 'c', 'b' ); # @pos is ({c=>2},{b=>1})
-\& my $howmany = $omap->get_pos( 'A', 'b', 'c' );  # $howmany is 2
+Accepts zero or more keys.
+.PP
+In list context, returns a hash of keys/positions found.  In scalar
+context, returns a hash ref to this hash.  If no keys given, all the
+positions are mapped in the hash.
+.PP
+.Vb 3
+\& my $omap     = Data::Omap->new( [{a=>1},{b=>2},{c=>3}] );
+\& my %pos      = $omap->get_pos_hash( 'c', 'b' ); # %pos      is (b=>1,c=>2)
+\& my $pos_href = $omap->get_pos_hash( 'c', 'b' ); # $pos_href is {b=>1,c=>2}
 .Ve
 .PP
-Returns \f(CW\*(C`undef/()\*(C'\fR if no keys given or object is empty.
+If a given key is not found, it will not appear in the returned hash.
+.PP
+Returns \f(CW\*(C`undef/()\*(C'\fR if object is empty.
 .ie n .Sh "$omap\->get_keys( @keys );"
 .el .Sh "$omap\->get_keys( \f(CW@keys\fP );"
 .IX Subsection "$omap->get_keys( @keys );"
@@ -527,3 +536,30 @@ Returns an empty list.
 .PP
 This routine supports the tied hash \s-1CLEAR\s0 method, but may be called
 directly, too.
+.SH "SEE ALSO"
+.IX Header "SEE ALSO"
+Tie::IxHash
+.Sp
+.RS 8
+Use Tie::IxHash if what you need is an ordered hash in general.  The
+Data::Omap module does repeat many of Tie::IxHash's features.  What
+differs is that it operates directly on a specific type of data
+structure.  Whether this pans out in the long run remains to be seen.
+.RE
+.PP
+Data::Pairs
+.Sp
+.RS 8
+The code in Data::Omap is the basis for that in the Data::Pairs module.
+Data::Pairs also operates on an ordered hash, but allows duplicate keys.
+.RE
+.SH "AUTHOR"
+.IX Header "AUTHOR"
+Brad Baxter, <bmb@galib.uga.edu>
+.SH "COPYRIGHT AND LICENSE"
+.IX Header "COPYRIGHT AND LICENSE"
+Copyright (C) 2008 by Brad Baxter
+.PP
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself, either Perl version 5.8.8 or,
+at your option, any later version of Perl 5 you may have available.

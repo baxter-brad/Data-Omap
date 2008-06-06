@@ -6,6 +6,7 @@ use Test::More 'no_plan';
 use Data::Dumper;
 $Data::Dumper::Terse=1;
 $Data::Dumper::Indent=0;
+$Data::Dumper::Sortkeys=1;
 
 BEGIN { use_ok('Data::Omap') };
 
@@ -206,55 +207,76 @@ is( Dumper($omap), "bless( [{'a' => 1},{'c' => 3},{'b' => 2}], 'Data::Omap' )",
 OBJECT_get_pos: {
 #---------------------------------------------------------------------
 
-=head2 $omap->get_pos( @keys );
+=head2 $omap->get_pos( $key );
+
+Gets position where a key is found.
+
+Accepts one key (any extras are silently ignored).  
+
+Returns the position or undef (if key not found), regardless of context, e.g.,
+
+ my $omap = Data::Omap->new( [{a=>1},{b=>2},{c=>3}] );
+ my @pos  = $omap->get_pos( 'b' );  # (1)
+ my $pos  = $omap->get_pos( 'b' );  # 1
+
+Returns C<undef/()> if no key given or object is empty.
+
+=cut
+
+ my $omap = Data::Omap->new( [{a=>1},{b=>2},{c=>3}] );
+
+is( Dumper($omap), "bless( [{'a' => 1},{'b' => 2},{'c' => 3}], 'Data::Omap' )",
+    "new()" );
+
+ my @pos  = $omap->get_pos( 'b' );  # (1)
+
+is( "@pos", 1,
+    "get_pos( 'b' ), list" );
+
+ my $pos  = $omap->get_pos( 'b' );  # 1
+
+is( $pos, 1,
+    "get_pos( 'b' ), scalar" );
+
+}
+
+OBJECT_get_pos_hash: {
+#---------------------------------------------------------------------
+
+=head2 $omap->get_pos_hash( @keys );
 
 Gets positions where keys are found.
 
-Accepts one or more keys.
+Accepts zero or more keys.
 
-If one key is given, returns the position or undef (if key not
-found), regardless of context, e.g.,
+In list context, returns a hash of keys/positions found.  In scalar
+context, returns a hash ref to this hash.  If no keys given, all the
+positions are mapped in the hash.
 
- my $omap    = Data::Omap->new( [{a=>1},{b=>2},{c=>3}] );
- my @pos = $omap->get_pos( 'b' );  # (1)
- my $pos = $omap->get_pos( 'b' );  # 1
-
-If multiple keys, returns a list of hash refs in list context, the
-number of keys found in scalar context.  The positions are listed in
-the order that the keys were given (rather than in numerical order),
-e.g.,
-
- @pos        = $omap->get_pos( 'c', 'b' ); # @pos is ({c=>2},{b=>1})
- my $howmany = $omap->get_pos( 'A', 'b', 'c' );  # $howmany is 2
+ my $omap     = Data::Omap->new( [{a=>1},{b=>2},{c=>3}] );
+ my %pos      = $omap->get_pos_hash( 'c', 'b' ); # %pos      is (b=>1,c=>2)
+ my $pos_href = $omap->get_pos_hash( 'c', 'b' ); # $pos_href is {b=>1,c=>2}
+                                                                                                                                 
+If a given key is not found, it will not appear in the returned hash.
 
 Returns C<undef/()> if no keys given or object is empty.
 
 =cut
 
-     my $omap    = Data::Omap->new( [{a=>1},{b=>2},{c=>3}] );
+ my $omap     = Data::Omap->new( [{a=>1},{b=>2},{c=>3}] );
 
 is( Dumper($omap), "bless( [{'a' => 1},{'b' => 2},{'c' => 3}], 'Data::Omap' )",
     "new()" );
 
-     my @pos = $omap->get_pos( 'b' );  # (1)
+ my %pos      = $omap->get_pos_hash( 'c', 'b' ); # %pos      is (b=>1,c=>2)
 
-is( "@pos", 1,
-    "get_pos( 'b' ), list" );
+is( Dumper(\%pos), "{'b' => 1,'c' => 2}",
+    "get_pos_hash, list context" );
 
-     my $pos = $omap->get_pos( 'b' );  # 1
+ my $pos_href = $omap->get_pos_hash( 'c', 'b' ); # $pos_href is {b=>1,c=>2}
 
-is( $pos, 1,
-    "get_pos( 'b' ), scalar" );
-
-     @pos        = $omap->get_pos( 'c', 'b' );       # @pos is (2, 1)
-
-is( Dumper(\@pos), "[{'c' => 2},{'b' => 1}]",
-    "get_pos( 'c', 'b' ), list" );
-
-     my $howmany = $omap->get_pos( 'A', 'b', 'c' );  # $howmany is 2
-
-is( $howmany, 2,
-    "get_pos( 'A', 'b', 'c' ), scalar" );
+is( Dumper($pos_href), "{'b' => 1,'c' => 2}",
+    "get_pos_hash, scalar context" );
 
 }
 
