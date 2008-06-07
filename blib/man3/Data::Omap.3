@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "Data::Omap 3"
-.TH Data::Omap 3 "2008-06-05" "perl v5.8.8" "User Contributed Perl Documentation"
+.TH Data::Omap 3 "2008-06-07" "perl v5.8.8" "User Contributed Perl Documentation"
 .SH "NAME"
 Data::Omap \- Perl module to implement ordered mappings
 .SH "SYNOPSIS"
@@ -216,7 +216,7 @@ Normally, the underlying structure of an \s-1OO\s0 object is encapsulated
 and not directly accessible (when you play nice). One key
 implementation detail of Data::Omap is the desire that the underlying
 ordered mapping data structure (an array of single-key hashes) be
-publically maintained as such and directly accessible, if desired.
+publically maintained as such and directly accessible if desired.
 .PP
 To that end, no attributes but the data itself are stored in the
 objects.  In the current version, that is why \f(CW\*(C`order()\*(C'\fR is a class
@@ -236,7 +236,7 @@ this could be accomplished by passing the object through a formatting
 routine, but I wanted to see first how this implementation might work.
 .SH "VERSION"
 .IX Header "VERSION"
-Data::Omap version 0.04
+Data::Omap version 0.05
 .SH "CLASS METHODS"
 .IX Header "CLASS METHODS"
 .Sh "Data::Omap\->\fInew()\fP;"
@@ -277,7 +277,7 @@ Otherwise, accepts the predefined orderings: 'na', 'nd', 'sa', 'sd',
 .PP
 .Vb 7
 \& Data::Omap->order( 'na' );   # numeric ascending
-\& Data::Omap->order( 'nd' );   # numeric ascending
+\& Data::Omap->order( 'nd' );   # numeric descending
 \& Data::Omap->order( 'sa' );   # string  ascending
 \& Data::Omap->order( 'sd' );   # string  descending
 \& Data::Omap->order( 'sna' );  # string/numeric ascending
@@ -299,7 +299,7 @@ Returns the code reference if ordering is \s-1ON\s0, a false value if \s-1OFF\s0
 .PP
 Note, when object-level ordering is implemented, it is expected that
 the class-level option will still be available.  In that case, any
-new objects will inherite the class-level ordering unless overridden
+new objects will inherit the class-level ordering unless overridden
 at the object level.
 .SH "OBJECT METHODS"
 .IX Header "OBJECT METHODS"
@@ -342,7 +342,7 @@ Get a value or values.
 Regardless of parameters, if the object is empty, undef is returned in
 scalar context, an empty list in list context.
 .PP
-If no paramaters, gets all the values.  In scalar context, gives
+If no parameters, gets all the values.  In scalar context, gives
 number of values in the object.
 .PP
 .Vb 3
@@ -555,7 +555,7 @@ Data::Pairs also operates on an ordered hash, but allows duplicate keys.
 .RE
 .SH "AUTHOR"
 .IX Header "AUTHOR"
-Brad Baxter, <bmb@galib.uga.edu>
+Brad Baxter, <bbaxter@cpan.org>
 .SH "COPYRIGHT AND LICENSE"
 .IX Header "COPYRIGHT AND LICENSE"
 Copyright (C) 2008 by Brad Baxter
