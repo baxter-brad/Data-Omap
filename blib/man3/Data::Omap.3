@@ -129,7 +129,7 @@
 .\" ========================================================================
 .\"
 .IX Title "Data::Omap 3"
-.TH Data::Omap 3 "2008-06-07" "perl v5.8.8" "User Contributed Perl Documentation"
+.TH Data::Omap 3 "2008-06-10" "perl v5.8.8" "User Contributed Perl Documentation"
 .SH "NAME"
 Data::Omap \- Perl module to implement ordered mappings
 .SH "SYNOPSIS"
@@ -178,6 +178,30 @@ Data::Omap \- Perl module to implement ordered mappings
 \& my @keys   = keys %omap;      # $omap->get_keys() is faster 
 \& my @values = values %omap;    # $omap->get_values() is faster
 \& my @slice  = @omap{qw(c b)};  # (3, 2) (slice values are parameter-ordered)
+.Ve
+.PP
+.Vb 1
+\& # Non-OO style
+.Ve
+.PP
+.Vb 1
+\& use Data::Omap ':ALL';
+.Ve
+.PP
+.Vb 1
+\& my $omap = [{a=>1},{b=>2},{c=>3}];  # new-ish, but not blessed
+.Ve
+.PP
+.Vb 2
+\& omap_set( $omap, a => 0 );        # (pass omap as first parameter)
+\& omap_add( $omap, b2 => 2.5, 2 );  # insert at position 2 (between b and c)
+.Ve
+.PP
+.Vb 4
+\& my $value  = omap_get_values( $omap, 'c' );      # 3
+\& my @keys   = omap_get_keys( $omap );             # (a, b, b2, c)
+\& my @values = omap_get_values( $omap );           # (0, 2, 2.5, 3)
+\& my @subset = omap_get_values( $omap, qw(c b) );  # (2, 3) (values are data-ordered)
 .Ve
 .PP
 .Vb 1
@@ -236,7 +260,7 @@ this could be accomplished by passing the object through a formatting
 routine, but I wanted to see first how this implementation might work.
 .SH "VERSION"
 .IX Header "VERSION"
-Data::Omap version 0.05
+Data::Omap version 0.06
 .SH "CLASS METHODS"
 .IX Header "CLASS METHODS"
 .Sh "Data::Omap\->\fInew()\fP;"
@@ -252,8 +276,8 @@ Accepts array ref containing single-key hash refs, e.g.,
 When provided, this data will be loaded into the object.
 .PP
 Returns a reference to the Data::Omap object.
-.Sh "Data::Omap\->\fIorder()\fP;"
-.IX Subsection "Data::Omap->order();"
+.Sh "Data::Omap\->order( [$predefined_ordering | coderef] );"
+.IX Subsection "Data::Omap->order( [$predefined_ordering | coderef] );"
 When ordering is \s-1ON\s0, new key/value pairs will be added in the
 specified order.  When ordering is \s-1OFF\s0 (the default), new pairs
 will be added to the end of the mapping.
@@ -395,9 +419,9 @@ Note that \f(CW\*(C`add()\*(C'\fR will croak if a duplicate key would result, i.
 if the key being added is already in the object.
 .PP
 Returns \f(CW$value\fR.
-.ie n .Sh "$omap\->_add_ordered( $key\fP => \f(CW$value );"
-.el .Sh "$omap\->_add_ordered( \f(CW$key\fP => \f(CW$value\fP );"
-.IX Subsection "$omap->_add_ordered( $key => $value );"
+.ie n .Sh "omap_add_ordered( $omap\fP, \f(CW$key\fP => \f(CW$value );"
+.el .Sh "omap_add_ordered( \f(CW$omap\fP, \f(CW$key\fP => \f(CW$value\fP );"
+.IX Subsection "omap_add_ordered( $omap, $key => $value );"
 Private routine used by \f(CW\*(C`set()\*(C'\fR and \f(CW\*(C`add()\*(C'\fR.
 .PP
 Accepts \f(CW$key\fR and \f(CW$value\fR.
@@ -536,6 +560,181 @@ Returns an empty list.
 .PP
 This routine supports the tied hash \s-1CLEAR\s0 method, but may be called
 directly, too.
+.SH "NON-OO STYLE"
+.IX Header "NON-OO STYLE"
+An ordered mapping (as defined here) is an array of single-key
+hashes.  It is possible to manipulate an ordered mapping directly
+without first blessing it with \f(CW\*(C`new()\*(C'\fR.  Most methods have a
+corresponding exportable subroutine named with the prefix, \f(CW\*(C`omap_\*(C'\fR,
+e.g., \f(CW\*(C`omap_set()\*(C'\fR, \f(CW\*(C`omap_get_keys()\*(C'\fR, etc.
+.PP
+To call these subroutines, pass the array reference as the first
+parameter, e.g., instead of doing \f(CW\*(C`$omap\->set( a => 1)\*(C'\fR, do \f(CW\*(C`omap_set( $omap, a => 1)\*(C'\fR.
+.Sh "Exporting"
+.IX Subsection "Exporting"
+Nothing is exported by default.  All subroutines may be exported
+using \f(CW\*(C`:ALL\*(C'\fR, e.g.,
+.PP
+.Vb 1
+\& use Data::Omap ':ALL';
+.Ve
+.PP
+They are shown below.
+.PP
+A subset may be exported using \f(CW\*(C`:STD\*(C'\fR, e.g.,
+.PP
+.Vb 1
+\& use Data::Omap ':STD';
+.Ve
+.PP
+This subset includes
+\&\f(CW\*(C`omap_set()\*(C'\fR
+\&\f(CW\*(C`omap_get_values()\*(C'\fR
+\&\f(CW\*(C`omap_get_keys()\*(C'\fR
+\&\f(CW\*(C`omap_exists()\*(C'\fR
+\&\f(CW\*(C`omap_delete()\*(C'\fR
+\&\f(CW\*(C`omap_clear()\*(C'\fR
+.ie n .Sh """new""\fP without \f(CW""new()"""
+.el .Sh "\f(CWnew\fP without \f(CWnew()\fP"
+.IX Subsection "new without new()"
+To create an ordered mapping from scratch, simply assign an empty
+array ref, e.g.,
+.PP
+.Vb 1
+\& my $omap = [];
+.Ve
+.ie n .Sh "omap_order( $omap\fP[, \f(CW$predefined_ordering | coderef] );"
+.el .Sh "omap_order( \f(CW$omap\fP[, \f(CW$predefined_ordering\fP | coderef] );"
+.IX Subsection "omap_order( $omap[, $predefined_ordering | coderef] );"
+(See \f(CW\*(C`Data::Omap\->order()\*(C'\fR above.)
+.PP
+.Vb 7
+\& omap_order( $omap, 'na' );   # numeric ascending
+\& omap_order( $omap, 'nd' );   # numeric descending
+\& omap_order( $omap, 'sa' );   # string  ascending
+\& omap_order( $omap, 'sd' );   # string  descending
+\& omap_order( $omap, 'sna' );  # string/numeric ascending
+\& omap_order( $omap, 'snd' );  # string/numeric descending
+\& omap_order( $omap, sub{ int($_[0]/100) < int($_[1]/100) } );  # code
+.Ve
+.ie n .Sh "omap_set( $omap\fP, \f(CW$key\fP => \f(CW$value\fP[, \f(CW$pos] );"
+.el .Sh "omap_set( \f(CW$omap\fP, \f(CW$key\fP => \f(CW$value\fP[, \f(CW$pos\fP] );"
+.IX Subsection "omap_set( $omap, $key => $value[, $pos] );"
+(See \f(CW\*(C`$omap\->set()\*(C'\fR above.)
+.PP
+.Vb 2
+\& my $omap = [{a=>1},{b=>2}];
+\& omap_set( $omap, c => 3, 0 );  # omap is now [{c=>3},{b=>2}]
+.Ve
+.ie n .Sh "omap_get_values( $omap\fP[, \f(CW$key\fP[, \f(CW@keys]] );"
+.el .Sh "omap_get_values( \f(CW$omap\fP[, \f(CW$key\fP[, \f(CW@keys\fP]] );"
+.IX Subsection "omap_get_values( $omap[, $key[, @keys]] );"
+(See \f(CW\*(C`$omap\->get_values()\*(C'\fR above.)
+.PP
+.Vb 3
+\& my $omap = [{a=>1},{b=>2},{c=>3}];
+\& my @values  = omap_get_values( $omap );  # (1, 2, 3)
+\& my $howmany = omap_get_values( $omap );  # 3
+.Ve
+.PP
+.Vb 2
+\& @values   = omap_get_values( $omap, 'b' );  # (2)
+\& my $value = omap_get_values( $omap, 'b' );  # 2
+.Ve
+.PP
+.Vb 2
+\& @values  = omap_get_values( $omap, 'c', 'b', 'A' );  # (2, 3)
+\& $howmany = omap_get_values( $omap, 'c', 'b', 'A' );  # 2
+.Ve
+.ie n .Sh "omap_add( $omap\fP, \f(CW$key\fP => \f(CW$value\fP[, \f(CW$pos] );"
+.el .Sh "omap_add( \f(CW$omap\fP, \f(CW$key\fP => \f(CW$value\fP[, \f(CW$pos\fP] );"
+.IX Subsection "omap_add( $omap, $key => $value[, $pos] );"
+(See \f(CW\*(C`$omap\->add()\*(C'\fR above.)
+.PP
+.Vb 2
+\& my $omap = [{a=>1},{b=>2}];
+\& omap_add( $omap, c => 3, 1 );  # omap is now [{a=>1},{c=>3},{b=>2}]
+.Ve
+.ie n .Sh "omap_get_pos( $omap\fP, \f(CW$key );"
+.el .Sh "omap_get_pos( \f(CW$omap\fP, \f(CW$key\fP );"
+.IX Subsection "omap_get_pos( $omap, $key );"
+(See \f(CW\*(C`$omap\->get_pos()\*(C'\fR above.)
+.PP
+.Vb 3
+\& my $omap = [{a=>1},{b=>2},{c=>3}];
+\& my @pos  = omap_get_pos( $omap, 'b' );  # (1)
+\& my $pos  = omap_get_pos( $omap, 'b' );  # 1
+.Ve
+.ie n .Sh "omap_get_pos_hash( $omap\fP[, \f(CW@keys] );"
+.el .Sh "omap_get_pos_hash( \f(CW$omap\fP[, \f(CW@keys\fP] );"
+.IX Subsection "omap_get_pos_hash( $omap[, @keys] );"
+(See \f(CW\*(C`$omap\->get_pos_hash()\*(C'\fR above.)
+.PP
+.Vb 3
+\& my $omap     = [{a=>1},{b=>2},{c=>3}];
+\& my %pos      = omap_get_pos_hash( $omap, 'c', 'b' ); # %pos      is (b=>1,c=>2)
+\& my $pos_href = omap_get_pos_hash( $omap, 'c', 'b' ); # $pos_href is {b=>1,c=>2}
+.Ve
+.ie n .Sh "omap_get_keys( $omap\fP[, \f(CW@keys] );"
+.el .Sh "omap_get_keys( \f(CW$omap\fP[, \f(CW@keys\fP] );"
+.IX Subsection "omap_get_keys( $omap[, @keys] );"
+(See \f(CW\*(C`$omap\->get_keys()\*(C'\fR above.)
+.PP
+.Vb 3
+\& my $omap    = [{a=>1},{b=>2},{c=>3}];
+\& my @keys    = omap_get_keys( $omap );  # @keys is (a, b, c)
+\& my $howmany = omap_get_keys( $omap );  # $howmany is 3
+.Ve
+.PP
+.Vb 2
+\& @keys    = omap_get_keys( $omap, 'c', 'b', 'A' );  # @keys is (b, c)
+\& $howmany = omap_get_keys( $omap, 'c', 'b', 'A' );  # $howmany is 2
+.Ve
+.ie n .Sh "omap_get_array( $omap\fP[, \f(CW@keys] );"
+.el .Sh "omap_get_array( \f(CW$omap\fP[, \f(CW@keys\fP] );"
+.IX Subsection "omap_get_array( $omap[, @keys] );"
+(See \f(CW\*(C`$omap\->get_array()\*(C'\fR above.)
+.PP
+.Vb 3
+\& my $omap    = [{a=>1},{b=>2},{c=>3}];
+\& my @array   = omap_get_array( $omap );  # @array is ({a=>1}, {b=>2}, {c=>3})
+\& my $aref    = omap_get_array( $omap );  # $aref  is [{a=>1}, {b=>2}, {c=>3}]
+.Ve
+.PP
+.Vb 2
+\& @array = omap_get_array( $omap, 'c', 'b', 'A' );  # @array is ({b->2}, {c=>3})
+\& $aref  = omap_get_array( $omap, 'c', 'b', 'A' );  # @aref  is [{b->2}, {c=>3}]
+.Ve
+.ie n .Sh "omap_exists( $omap\fP, \f(CW$key );"
+.el .Sh "omap_exists( \f(CW$omap\fP, \f(CW$key\fP );"
+.IX Subsection "omap_exists( $omap, $key );"
+(See \f(CW\*(C`$omap\->exists()\*(C'\fR above.)
+.PP
+.Vb 1
+\& my $bool = omap_exists( $omap, 'a' );
+.Ve
+.ie n .Sh "omap_delete( $omap\fP, \f(CW$key );"
+.el .Sh "omap_delete( \f(CW$omap\fP, \f(CW$key\fP );"
+.IX Subsection "omap_delete( $omap, $key );"
+(See \f(CW\*(C`$omap\->delete()\*(C'\fR above.)
+.PP
+.Vb 1
+\& omap_delete( $omap, 'a' );
+.Ve
+.ie n .Sh "omap_clear( $omap );"
+.el .Sh "omap_clear( \f(CW$omap\fP );"
+.IX Subsection "omap_clear( $omap );"
+(See \f(CW\*(C`$omap\->clear()\*(C'\fR above.)
+.PP
+.Vb 1
+\& omap_clear( $omap );
+.Ve
+.PP
+Or simply:
+.PP
+.Vb 1
+\& @$omap = ();
+.Ve
 .SH "SEE ALSO"
 .IX Header "SEE ALSO"
 Tie::IxHash
