@@ -8,9 +8,7 @@ $Data::Dumper::Terse=1;
 $Data::Dumper::Indent=0;
 $Data::Dumper::Sortkeys=1;
 
-BEGIN { use_ok('Data::Omap') };
-
-use Data::Omap ':ALL';
+BEGIN { use_ok('Data::Omap', ':ALL') };
 
 my( $omap, @values, @keys, @array, $aref, $pos, %pos, $pos_href );
 

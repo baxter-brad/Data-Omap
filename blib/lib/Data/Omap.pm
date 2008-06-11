@@ -124,8 +124,8 @@ our @EXPORT_OK = qw(
     omap_set    omap_get_values omap_get_keys
     omap_exists omap_delete     omap_clear 
     omap_add    omap_order      omap_get_pos
-    omap_get_pos_hash  omap_get_array
-    omap_is_valid_omap omap_errstr
+    omap_get_pos_hash omap_get_array
+    omap_is_valid     omap_errstr
     );
 our %EXPORT_TAGS = (
     STD => [qw( 
@@ -135,8 +135,8 @@ our %EXPORT_TAGS = (
     omap_set    omap_get_values omap_get_keys
     omap_exists omap_delete     omap_clear 
     omap_add    omap_order      omap_get_pos
-    omap_get_pos_hash  omap_get_array
-    omap_is_valid_omap omap_errstr )],
+    omap_get_pos_hash omap_get_array
+    omap_is_valid     omap_errstr )],
     );
 
 my $order;   # package global, see order() accessor
@@ -166,14 +166,6 @@ sub new {
 
     croak omap_errstr() unless omap_is_valid( $aref );
     bless $aref, $class;
-}
-
-sub omap_new {  # non-oo "new"
-    my( $aref ) = @_;
-    return [] unless $aref;
-
-    croak omap_errstr() unless omap_is_valid( $aref );
-    $aref;
 }
 
 sub omap_is_valid {
